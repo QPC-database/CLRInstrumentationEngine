@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Require at least version 2.8.12 of CMake
-cmake_minimum_required(VERSION 2.8.12)
+# Require at least version 3.14 of CMake
+cmake_minimum_required(VERSION 3.14)
 
 IF(NOT EXISTS "${CMAKE_INSTALL_PREFIX}" OR NOT IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
     message(FATAL_ERROR "Required property CMAKE_INSTALL_PREFIX not correctly defined.")
@@ -221,6 +221,15 @@ function(generate_exports_file inputFilename versionName outputFilename)
                               PROPERTIES GENERATED TRUE)
 endfunction()
 
+macro (fetch_google_test)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        URL ${GOOGLE_TEST_URL}
+    )
+    FetchContent_MakeAvailable(googletest)
+endmacro(fetch_google_test)
+
 # Set the project name
 project(ClrInstrumentationEngine)
 
@@ -343,4 +352,7 @@ add_subdirectory(Common.Lib)
 add_subdirectory(InstrumentationEngine.Api)
 add_subdirectory(InstrumentationEngine.Lib)
 add_subdirectory(InstrumentationEngine)
+
+enable_testing()
+add_subdirectory(Common.LibTests)
 

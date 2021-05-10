@@ -77,8 +77,7 @@ check_prereqs()
 {
     echo "Checking pre-requisites..."
 
-    # Check presence of CMake on the path
-    hash cmake 2>/dev/null || { echo >&2 "Please install cmake before running this script"; print_install_instructions; exit 1; }
+    get_cmake
 
     # Check for dotnet
     hash dotnet 2>/dev/null || { echo >&2 "Please install dotnet before running this script"; print_install_instructions; exit 1; }
@@ -109,6 +108,59 @@ locate_llvm_exec()
     exit 1
     fi
 }
+
+get_download_url()
+{
+    manifest=$EnlistmentRoot/build/components/$1/cgmanifest.json
+    if [[ ! -f $manifest ]]; then  
+        echo "Could not find component '$1'"
+        exit 1
+    fi
+
+    url=$(grep "DownloadUrl" $manifest | while read -r line ; do
+            # remove quotes, commas, spaces, and the initial key.
+            found=$(echo $line | sed 's/[\"]//g' | sed 's/[,]//g' | sed 's/\s*//g' | sed 's/DownloadUrl://g')
+            echo $found
+            break
+        done)
+
+    if [ -z "$url" ]; then
+        echo "Could not find download url for component '$manifest'"
+        exit 1
+    fi
+
+    echo $url   
+}
+
+get_cmake()
+{
+    cmakeLocation=cmake
+
+    #if cmake is not on this machine just download it.
+    hash cmake 2>/dev/null || {
+         $cmakeLocation=download_cmake
+         echo cmakeLocation
+         return; 
+    }
+
+    # get the current version of cmake, and see if it is high enough
+    cmakeVersion=$(cmake --version)
+    cmakeVersion=$(echo $cmakeVersion | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\).*$/\1/g')
+    echo "found cmake version $cmakeVersion"
+    cmakeMajor=$(echo $cmakeVersion | sed 's/^.*[^0-9]\([0-9]*\)\..*$/\1'/)
+    cmakeMinor=$(echo $cmakeVersion | sed 's/^.*[^0-9]*\.\([0-9]*\)\..*$/\1'/)
+    if (( $cmakeMajor > 3 )); then
+        if (( $cmakeMinor > 14 )); then
+            echo "Sufficient cmake version found. Skipping download"
+            echo $cmakeLocation
+            return
+        fi
+    fi
+
+    echo "Insufficient cmake version. Ensure cmake version 3.14 or later is installed"
+    exit 1
+}
+
 
 locate_build_tools()
 {
@@ -154,6 +206,9 @@ locate_build_tools()
         source $linux_id_file
         cmake_extra_defines="$cmake_extra_defines -DCLR_CMAKE_LINUX_ID=$ID"
     fi
+
+    __GoogleTestUrl=$(get_download_url "googletest")
+    $echo "found google test at '$__GoogleTestUrl'"
 }
 
 invoke_build()
@@ -177,6 +232,7 @@ invoke_build()
       "-DREPOSITORY_ROOT=$EnlistmentRoot" \
       "-DINTERMEDIATES_DIR=$__IntermediatesDir" \
       "-DENGINEBINARIES_DIR=$__ClrInstrumentationEngineBinDir" \
+      "-DGOOGLE_TEST_URL=$__GoogleTestUrl" \
       $cmake_extra_defines \
       "$EnlistmentRoot/src"
 
@@ -212,6 +268,8 @@ invoke_build()
         exit 1
     fi
 
+    echo "Running tests"
+    ctest
 }
 
 write_commit_file()
@@ -527,6 +585,8 @@ setup_dirs
 check_prereqs
 
 restore_build_dependencies
+
+pwd
 
 invoke_build
 

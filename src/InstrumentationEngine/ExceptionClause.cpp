@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "ExceptionClause.h"
 #include "InstructionGraph.h"
+#include "../Common.Lib/systemstring.h"
 
 MicrosoftInstrumentationEngine::CExceptionClause::CExceptionClause(CMethodInfo* m_pMethodInfo) :
     m_ExceptionHandlerType(mdTokenNil),
@@ -17,6 +18,7 @@ HRESULT MicrosoftInstrumentationEngine::CExceptionClause::InitializeFromSmall(
     _In_ CInstructionGraph* pInstructionGraph
     )
 {
+    SystemString ss = "";
     HRESULT hr = S_OK;
     CLogging::LogMessage(_T("Starting CExceptionClause::InitializeFromSmall"));
 

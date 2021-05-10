@@ -15,6 +15,7 @@ set(src_files
     ./stdafx.cpp
     ./ImplQueryInterface.cpp
     ./refcount.cpp
+    ./systemstring.cpp
 )
 
 add_lib(${PROJECT_NAME}
