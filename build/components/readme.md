@@ -6,7 +6,7 @@ the files and parse them in shell automation without needing to depend on additi
 the json.
 
 The format for *cgmanifest.json* files can be found under 
-[https://docs.opensource.microsoft.com/tools/cg/cgmanifest.html](CGManifest File) as part of the
-[https://docs.opensource.microsoft.com](Microsoft Open Source Docs). It is *important* that the
+[CGManifest File](https://docs.opensource.microsoft.com/tools/cg/cgmanifest.html) as part of the
+[Microsoft Open Source Docs](https://docs.opensource.microsoft.com). It is *important* that the
 files are formatted according to this specification so that open source dependencies are correctly
-registered.
+registered.`

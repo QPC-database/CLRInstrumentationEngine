@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "../Common.Lib/systemstring.h"
+#include <stdio.h>
 
 using namespace std;
 using namespace CommonLib;
@@ -19,4 +20,13 @@ TEST(StringConversionTests, u16u8test) {
     string u8result;
     EXPECT_TRUE(ss.ToString(u8result));
     EXPECT_EQ(u8test, u8result);
+}
+
+TEST(StringConversionTests, localStringTest) {
+    SystemString ss = _SS("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
+    tstring tresult;
+    EXPECT_TRUE(ss.ToString(tresult));
+    SystemString systemResult(tresult);
+    EXPECT_FALSE(systemResult.HasError());
+    EXPECT_EQ(ss, systemResult);
 }

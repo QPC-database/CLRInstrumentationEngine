@@ -27,7 +27,9 @@
 #if !defined(_WS)
 #if defined(PLATFORM_UNIX)
 #define _WS(X) u ## X
+#define _SS(X) u8 ## X
 #else
 #define _WS(X) L ## X
+#define _SS(X) L ## X
 #endif
 #endif

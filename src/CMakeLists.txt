@@ -67,6 +67,10 @@ macro (build_init build_language build_type)
         add_compile_options(-g)
         add_compile_options(-pthread)
         add_compile_options(-ferror-limit=1000)
+        if (CMAKE_BUILD_TYPE STREQUAL Debug)
+            #enable debugging of std types
+            add_compile_options(-fno-limit-debug-info)
+        endif(CMAKE_BUILD_TYPE STREQUAL Debug)
     endif ("${build_language}" STREQUAL CPP)
 
     # Sets the project build type.
