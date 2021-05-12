@@ -62,7 +62,7 @@ namespace CommonLib
 
         /// <summary>Returns true if an error occurred when constructing this object </summary>
 
-        bool HasError() const { return m_hresult; >= 0; }
+        bool HasError() const { return m_hresult < 0; }
 
         HRESULT Error() const { return m_hresult; }
 

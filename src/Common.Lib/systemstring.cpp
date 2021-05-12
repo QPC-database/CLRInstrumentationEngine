@@ -22,14 +22,31 @@ namespace CommonLib
         }
     };
 
+    HRESULT ErrnoToHResult(int& err) 
+    {
+        HRESULT hr;
+        switch (err)
+        {
+            case 0:
+                return S_OK;
+            case E2BIG:
+                return E_BOUNDS;
+            case EILSEQ:
+                return E_INVALIDARG;
+            case EINVAL:
+                return E_INVALIDARG;
+        }
+        return E_FAIL;
+    }
+
     SystemString::SystemString(_In_ const tstring& original)
     {
-        m_error = !FromString(original.c_str(), *this);
+        m_hresult = FromString(original.c_str(), *this);
     }
 
     SystemString::SystemString(_In_ const WCHAR* lpzwStr)
     {
-        m_error = !FromString(lpzwStr, *this);
+        m_hresult = FromString(lpzwStr, *this);
     }
 
     HRESULT SystemString::ToString(_Inout_ tstring& str)
@@ -44,18 +61,19 @@ namespace CommonLib
         size_t count = iconv(icnv.m_iconv, (char**)&pOrig, &inputLength, &pNew, &outputMax);
         if (count == (size_t)-1)
         {
+            HRESULT hr = ErrnoToHResult(errno);
             str = u"";
-            return false;
+            return hr;
         }
 
         str = buffer.get();
-        return true;
+        return S_OK;
     }
 
     HRESULT SystemString::ToString(_Inout_ string& str)
     {
         str = *this;
-        return true;
+        return S_OK;
        
     }
 
@@ -67,7 +85,8 @@ namespace CommonLib
     HRESULT SystemString::FromString(_In_ const std::string& original, _Inout_ SystemString& result)
     {
         result = original;
-        return true;
+        result.m_hresult = S_OK;
+        return result.m_hresult;
     }
 
     HRESULT SystemString::FromString(_In_ const WCHAR* lpzwStr, _Inout_ SystemString& result)
@@ -100,19 +119,20 @@ namespace CommonLib
         size_t count = iconv(icnv.m_iconv, &input, &inbytes, &output, &outbytes);
         if (count == (size_t)-1)
         {
+            HRESULT hr = ErrnoToHResult(errno);
             result = "";
-            return false;
+            result.m_hresult = hr;
+            return result.m_hresult;
         }
 
         result = buffer.get();
-        const std::string& strresult = (std::string)result;
-        return true;
+        return result.m_hresult;
     }
 
-    bool SystemString::FromString(_In_ const CHAR* lpzStr, _Inout_ SystemString& result)
+    HRESULT SystemString::FromString(_In_ const CHAR* lpzStr, _Inout_ SystemString& result)
     {
         result = SystemString(lpzStr);
-        return true;
+        return result.m_hresult;
     }
 #else
     SystemString::SystemString(_In_ const string& original)
@@ -139,7 +159,7 @@ namespace CommonLib
             unique_ptr<char[]> buffer(new char[required]);
             int written = WideCharToMultiByte(CP_UTF8, 0, c_str(), /*null terminated*/-1, buffer.get(), required, 0, 0);
             str = buffer.get();
-            return true;
+            return S_OK;
         }
 
         DWORD errorCode = GetLastError();
