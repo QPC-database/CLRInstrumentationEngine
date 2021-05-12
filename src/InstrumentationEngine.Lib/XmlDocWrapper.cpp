@@ -17,7 +17,17 @@ CXmlDocWrapper::CXmlDocWrapper()
 
 }
 
+HRESULT CXmlDocWrapper::LoadFile(_In_ LPCWSTR wszFile)
+{
+    return Load(wszFile, true);
+}
+
 HRESULT CXmlDocWrapper::LoadContent(_In_ LPCWSTR wszValue)
+{
+    return Load(wszValue, false);
+}
+
+HRESULT CXmlDocWrapper::Load(_In_ LPCWSTR wszValue, _In_ bool isFile)
 {
     HRESULT hr = S_OK;
 
@@ -29,8 +39,8 @@ HRESULT CXmlDocWrapper::LoadContent(_In_ LPCWSTR wszValue)
 
 #ifndef PLATFORM_UNIX
     // IMPORTANT: Default configuration here is safe from XXE attacks by default in MSXML 6.0 (which we are using), but not MSXML 3.0!
-    CComPtr<IXMLDOMDocument2> pDocument;
-    hr = CoCreateInstance(CLSID_DOMDocument60, NULL, CLSCTX_INPROC_SERVER, IID_IXMLDOMDocument2, (void**)&pDocument);
+    CComPtr<IXMLDOMDocument3> pDocument;
+    hr = CoCreateInstance(CLSID_FreeThreadedDOMDocument60, NULL, CLSCTX_INPROC_SERVER, IID_IXMLDOMDocument3, (void**)&pDocument);
     if (FAILED(hr))
     {
         CLogging::LogError(_T("Failed to create xml document"));
@@ -42,7 +52,15 @@ HRESULT CXmlDocWrapper::LoadContent(_In_ LPCWSTR wszValue)
     IfFailLog(pDocument->put_resolveExternals(VARIANT_TRUE));
 
     VARIANT_BOOL vbResult = VARIANT_TRUE;
-    hr = pDocument->loadXML(CComBSTR(wszValue), &vbResult);
+    if (isFile)
+    {
+        hr = pDocument->load(CComVariant(CComBSTR(wszValue)), &vbResult);
+    }
+    else
+    {
+        hr = pDocument->loadXML(CComBSTR(wszValue), &vbResult);
+    }
+
     if (FAILED(hr) || vbResult == VARIANT_FALSE)
     {
         CComPtr<IXMLDOMParseError> pError;
@@ -101,19 +119,28 @@ HRESULT CXmlDocWrapper::LoadContent(_In_ LPCWSTR wszValue)
 #else
     LIBXML_TEST_VERSION
 
-    CAutoVectorPtr<char> utf8Value;
+        CAutoVectorPtr<char> utf8Value;
     CEncoding::ConvertUtf16ToUtf8(wszValue, utf8Value);
 
     size_t utf8BufLen = 0;
     IfFailRet(StringUtils::StringLen(utf8Value.m_p, utf8BufLen));
 
-    xmlDoc* pDocument = xmlReadMemory(
-        utf8Value.m_p,  // buffer
-        utf8BufLen,     // size of the buffer
-        "",             // the base URL to use for the document
-        NULL,           // document encoding
-        0               // xmlParserOption
-    );
+    xmlDoc* pDocument = nullptr;
+
+    if (isFile)
+    {
+        pDocument = xmlReadFile(utf8Value.m_p, NULL, 0);
+    }
+    else
+    {
+        xmlReadMemory(
+            utf8Value.m_p,  // buffer
+            utf8BufLen,     // size of the buffer
+            "",             // the base URL to use for the document
+            NULL,           // document encoding
+            0               // xmlParserOption
+        );
+    }
 
     IfNullRet(pDocument);
 

@@ -11,6 +11,7 @@ class CXmlDocWrapper : CModuleRefCount
 public:
     CXmlDocWrapper();
 
+    HRESULT LoadFile(_In_ LPCWSTR wszFile);
     HRESULT LoadContent(_In_ LPCWSTR wszValue);
     HRESULT GetRootNode(_Out_ CXmlNode** ppNode);
 
@@ -18,6 +19,8 @@ public:
     DEFINE_DELEGATED_REFCOUNT_RELEASE(CXmlDocWrapper);
 
 private:
+
+    HRESULT Load(_In_ LPCWSTR data, _In_ bool isFilePath);
 #ifndef PLATFORM_UNIX
     CComPtr<IXMLDOMDocument2> m_pDocument;
 #else

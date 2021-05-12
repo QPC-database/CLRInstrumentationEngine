@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 #include "stdafx.h"
+#include "InstrumentationEngine.h"
+#include "InstrumentationMethod.h"
 #include "ConfigurationLoader.h"
 #include "CppUnitTest.h"
 #include <fstream>
