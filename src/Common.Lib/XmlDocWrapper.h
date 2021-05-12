@@ -6,7 +6,7 @@
 #include "XmlNode.h"
 
 #ifndef PLATFORM_UNIX
-    class IXMLDOMDocument3;
+    struct IXMLDOMDocument3;
 #else
     typedef struct _xmlDoc xmlDoc;
 #endif

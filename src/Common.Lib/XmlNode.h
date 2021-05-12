@@ -6,7 +6,7 @@
 #include "../Common.Headers/tstring.h"
 
 #ifndef PLATFORM_UNIX
-    class IXMLDOMNode;
+    struct IXMLDOMNode;
 #else
     typedef struct _xmlNode xmlNode;
 #endif
