@@ -66,6 +66,8 @@ using namespace ATL;
 #define wcsstr        PAL_wcsstr
 #define wcslen        PAL_wcslen
 #define wcsnlen_s     PAL_wcsnlen_s
+#define wcsstr        PAL_wcsstr
+#define wcscmp        PAL_wcscmp
 #endif
 
 #pragma warning(push)

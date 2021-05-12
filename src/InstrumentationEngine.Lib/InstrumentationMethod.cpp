@@ -11,10 +11,10 @@
 
 
 MicrosoftInstrumentationEngine::CInstrumentationMethod::CInstrumentationMethod(
-    _In_ BSTR bstrModuleFolder,
-    _In_ BSTR bstrName,
-    _In_ BSTR bstrDescription,
-    _In_ BSTR bstrModule,
+    _In_ LPCWSTR bstrModuleFolder,
+    _In_ LPCWSTR bstrName,
+    _In_ LPCWSTR bstrDescription,
+    _In_ LPCWSTR bstrModule,
     _In_ GUID& guidClassId,
     _In_ DWORD dwPriority
     ) : m_hmod(NULL), m_bstrName(bstrName), m_bstrModuleFolder(bstrModuleFolder), m_bstrModule(bstrModule), m_bstrDescription(bstrDescription), m_guidClassId(guidClassId), m_dwPriority(dwPriority)

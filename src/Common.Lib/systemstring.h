@@ -36,6 +36,12 @@ namespace CommonLib
     private:
         HRESULT m_hresult = S_OK;
     public:
+
+        /// <summary>
+        /// Construct an empty string
+        /// </summary>
+        SystemString() : osstring() {}
+
         /// <summary>
         /// Construct a system string from a UTF16LE (Windows) string.
         /// </summary>

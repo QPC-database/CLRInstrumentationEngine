@@ -16,7 +16,6 @@ set(src_files
     ./ConfigurationLocator.cpp
     ./ConfigurationSource.cpp
     ./DataContainer.cpp
-    ./Encoding.cpp
     ./FileLoggerSink.cpp
     ./HostLoggerSink.cpp
     ./InstrumentationMethod.cpp

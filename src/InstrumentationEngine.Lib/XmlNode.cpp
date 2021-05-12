@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "XmlNode.h"
-#include "Encoding.h"
+#include "../Common.Lib/systemstring.h"
 
 #ifndef PLATFORM_UNIX
 CXmlNode::CXmlNode(_In_ IXMLDOMNode* pNode)
@@ -65,51 +65,51 @@ CXmlNode* CXmlNode::Next()
     return nullptr;
 }
 
-HRESULT CXmlNode::GetName(_Out_ BSTR* pName)
+HRESULT CXmlNode::GetName(_Inout_ tstring& name)
 {
     HRESULT hr = S_OK;
 
-    IfNullRet(pName);
     IfNullRet(m_pNode);
+    SystemString sName;
+    name = _T("");
 
 #ifndef PLATFORM_UNIX
-    IfFailRet(m_pNode->get_nodeName(pName));
+    CComBSTR pName;
+    IfFailRet(m_pNode->get_nodeName(&pName));
+    IfFailRet(SystemString::FromString(pName.m_str, sName));
 
-    return S_OK;
 #else
-    return CEncoding::ConvertUtf8ToUtf16Bstr((const char*)m_pNode->name, pName);
+    IfFailRet(SystemString::FromString((const char*)m_pNode->name, sName));
 #endif
+
+    return sName.ToString(name);
 }
 
-HRESULT CXmlNode::GetStringValue(_Out_ BSTR* pValue)
+HRESULT CXmlNode::GetStringValue(_Inout_ tstring& value)
 {
     HRESULT hr = S_OK;
 
-    IfNullRet(pValue);
     IfNullRet(m_pNode);
-
+    SystemString sValue;
+    value = _T("");
 #ifndef PLATFORM_UNIX
     CComVariant varNodeValue;
     IfFailRet(m_pNode->get_nodeValue(&varNodeValue));
-
-    CComBSTR bstrNodeValue = varNodeValue.bstrVal;
-    *pValue = bstrNodeValue.Detach();
-
-    return S_OK;
-
+    IfFailRet(SystemString::FromString(varNodeValue.bstrVal, sValue));
 #else
-    return CEncoding::ConvertUtf8ToUtf16Bstr((const char*)m_pNode->content, pValue);
+    IfFailRet(SystemString::FromString((const char*)m_pNode->content, sValue));
 #endif
+
+    return sValue.ToString(value);
 }
 
-HRESULT CXmlNode::GetAttribute(_In_ const WCHAR* wszAttributeName, _Out_ BSTR* pValue)
+HRESULT CXmlNode::GetAttribute(_In_ LPCWSTR wszAttributeName, _Inout_ tstring& value)
 {
     HRESULT hr = S_OK;
 
-    IfNullRet(pValue);
     IfNullRet(m_pNode);
-
-    *pValue = nullptr;
+    SystemString sValue;
+    value = _T("");
 
 #ifndef PLATFORM_UNIX
 
@@ -126,21 +126,21 @@ HRESULT CXmlNode::GetAttribute(_In_ const WCHAR* wszAttributeName, _Out_ BSTR* p
         // Get the attribute value.
         CComVariant varValueAttr;
         pAttributeNode->get_nodeValue(&varValueAttr);
-        CComBSTR bstrAttrVal = varValueAttr.bstrVal;
-        *pValue = bstrAttrVal.Detach();
+        IfFailRet(SystemString::FromString(varValueAttr.bstrVal, sValue));
     }
 
     return S_OK;
 #else
-    CAutoVectorPtr<char> utf8AttrName;
-    CEncoding::ConvertUtf16ToUtf8(wszAttributeName, utf8AttrName);
-    xmlChar* utf8AttrValue = xmlGetProp(m_pNode, (const xmlChar *)utf8AttrName.m_p);
+    SystemString attrName(wszAttributeName);
+    IfFailRet(attrName.Error());
+
+    // Note on linux systems, SystemString is backed by a utf8 string.
+    xmlChar* utf8AttrValue = xmlGetProp(m_pNode, (const xmlChar *)attrName.c_str());
 
     if (utf8AttrValue != nullptr)
     {
-        hr = CEncoding::ConvertUtf8ToUtf16Bstr((const char*)utf8AttrValue, pValue);
+        IfFailRet(SystemString::FromString((const char*)utf8AttrValue, sValue));
         xmlFree(utf8AttrValue);
-        return hr;
     }
     else
     {
@@ -148,4 +148,6 @@ HRESULT CXmlNode::GetAttribute(_In_ const WCHAR* wszAttributeName, _Out_ BSTR* p
         return E_FAIL;
     }
 #endif
+
+    return sValue.ToString(value);
 }

@@ -6,6 +6,11 @@
 #include "stdafx.h"
 #include "XmlNode.h"
 
+namespace Common
+{
+    class SystemString;
+}
+
 class CXmlDocWrapper : CModuleRefCount
 {
 public:

@@ -19,13 +19,13 @@ public:
     CXmlNode* Next();
 
     // Element Name
-    HRESULT GetName(_Out_ BSTR* pName);
+    HRESULT GetName(_Inout_ tstring& name);
 
     // Element Value
-    HRESULT GetStringValue(_Out_ BSTR* pValue);
+    HRESULT GetStringValue(_Inout_ tstring& value);
 
     // Attribute Value
-    HRESULT GetAttribute(_In_ const WCHAR* wszAttributeName, _Out_ BSTR* pValue);
+    HRESULT GetAttribute(_In_ LPCWSTR wszAttributeName, _Inout_ tstring& value);
 
     DEFINE_DELEGATED_REFCOUNT_ADDREF(CXmlNode);
     DEFINE_DELEGATED_REFCOUNT_RELEASE(CXmlNode);

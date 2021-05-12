@@ -34,10 +34,10 @@ HRESULT CConfigurationLoaderHelper::LoadConfiguration(_In_ BSTR bstrConfigPath, 
     CComPtr<CXmlNode> pDocumentNode;
     IfFailRet(pDocument->GetRootNode(&pDocumentNode));
 
-    CComBSTR bstrDocumentNodeName;
-    IfFailRet(pDocumentNode->GetName(&bstrDocumentNodeName));
+    tstring documentNodeName;
+    IfFailRet(pDocumentNode->GetName(documentNodeName));
 
-    if (wcscmp(bstrDocumentNodeName, _T("InstrumentationEngineConfiguration")) != 0)
+    if (wcscmp(documentNodeName.c_str(), _T("InstrumentationEngineConfiguration")) != 0)
     {
         CLogging::LogError(_T("Invalid configuration. Root element should be InstrumentationEngineConfiguration"));
         return E_FAIL;
@@ -61,8 +61,8 @@ HRESULT CConfigurationLoaderHelper::LoadConfiguration(_In_ BSTR bstrConfigPath, 
 
     while (pCurrChildNode != nullptr)
     {
-        CComBSTR bstrCurrNodeName;
-        IfFailRet(pCurrChildNode->GetName(&bstrCurrNodeName));
+        tstring currNodeName;
+        IfFailRet(pCurrChildNode->GetName(currNodeName));
 
 #ifdef X86
         auto InstrumentationEnginePlatformNode = _T("InstrumentationMethod32");
@@ -70,7 +70,7 @@ HRESULT CConfigurationLoaderHelper::LoadConfiguration(_In_ BSTR bstrConfigPath, 
         auto InstrumentationEnginePlatformNode = _T("InstrumentationMethod64");
 #endif
 
-        if ((wcscmp(bstrCurrNodeName, _T("InstrumentationMethod")) != 0) && (wcscmp(bstrCurrNodeName, InstrumentationEnginePlatformNode) != 0))
+        if ((wcscmp(currNodeName.c_str(), _T("InstrumentationMethod")) != 0) && (wcscmp(currNodeName.c_str(), InstrumentationEnginePlatformNode) != 0))
         {
             CLogging::LogError(_T("Invalid configuration. Element should be InstrumentationMethod, InstrumentationMethod32 or InstrumentationMethod64"));
             return E_FAIL;
@@ -93,28 +93,28 @@ HRESULT CConfigurationLoaderHelper::ProcessInstrumentationMethodNode(_In_ BSTR b
     CComPtr<CXmlNode> pChildNode;
     IfFailRet(pNode->GetChildNode(&pChildNode));
 
-    CComBSTR bstrName;
-    CComBSTR bstrDescription;
-    CComBSTR bstrModule;
-    CComBSTR bstrClassGuid;
+    tstring name;
+    tstring description;
+    tstring module;
+    tstring classGuid;
     DWORD dwPriority = (DWORD)-1;
 
     while (pChildNode != nullptr)
     {
-        CComBSTR bstrCurrNodeName;
-        IfFailRet(pChildNode->GetName(&bstrCurrNodeName));
+        tstring currNodeName;
+        IfFailRet(pChildNode->GetName(currNodeName));
 
-        if (wcscmp(bstrCurrNodeName, _T("Name")) == 0)
+        if (wcscmp(currNodeName.c_str(), _T("Name")) == 0)
         {
             CComPtr<CXmlNode> pChildValue;
             IfFailRet(pChildNode->GetChildNode(&pChildValue));
 
             if (pChildValue != nullptr)
             {
-                IfFailRet(pChildValue->GetStringValue(&bstrName));
+                IfFailRet(pChildValue->GetStringValue(name));
             }
         }
-        else if (wcscmp(bstrCurrNodeName, _T("Description")) == 0)
+        else if (wcscmp(currNodeName.c_str(), _T("Description")) == 0)
         {
             CComPtr<CXmlNode> pChildValue;
             IfFailRet(pChildNode->GetChildNode(&pChildValue));
@@ -122,38 +122,38 @@ HRESULT CConfigurationLoaderHelper::ProcessInstrumentationMethodNode(_In_ BSTR b
             if (pChildValue != nullptr)
             {
                 CComVariant varNodeValue;
-                pChildValue->GetStringValue(&bstrDescription);
+                pChildValue->GetStringValue(description);
             }
         }
-        else if (wcscmp(bstrCurrNodeName, _T("Module")) == 0)
+        else if (wcscmp(currNodeName.c_str(), _T("Module")) == 0)
         {
             CComPtr<CXmlNode> pChildValue;
             IfFailRet(pChildNode->GetChildNode(&pChildValue));
 
             if (pChildValue != nullptr)
             {
-                IfFailRet(pChildValue->GetStringValue(&bstrModule));
+                IfFailRet(pChildValue->GetStringValue(module));
             }
         }
-        else if (wcscmp(bstrCurrNodeName, _T("ClassGuid")) == 0)
+        else if (wcscmp(currNodeName.c_str(), _T("ClassGuid")) == 0)
         {
             CComPtr<CXmlNode> pChildValue;
             IfFailRet(pChildNode->GetChildNode(&pChildValue));
             if (pChildValue != nullptr)
             {
-                IfFailRet(pChildValue->GetStringValue(&bstrClassGuid));
+                IfFailRet(pChildValue->GetStringValue(classGuid));
             }
         }
-        else if (wcscmp(bstrCurrNodeName, _T("Priority")) == 0)
+        else if (wcscmp(currNodeName.c_str(), _T("Priority")) == 0)
         {
             CComPtr<CXmlNode> pChildValue;
             pChildNode->GetChildNode(&pChildValue);
 
             if (pChildValue != nullptr)
             {
-                CComBSTR strNodeValue;
-                IfFailRet(pChildValue->GetStringValue(&strNodeValue));
-                dwPriority = (DWORD)(_wtoi64(strNodeValue));
+                tstring strNodeValue;
+                IfFailRet(pChildValue->GetStringValue(strNodeValue));
+                dwPriority = (DWORD)(_wtoi(strNodeValue.c_str()));
                 if (errno == ERANGE)
                 {
                     CLogging::LogError(_T("Invalid configuration. Priority should be a positive number"));
@@ -172,16 +172,17 @@ HRESULT CConfigurationLoaderHelper::ProcessInstrumentationMethodNode(_In_ BSTR b
         pChildNode.Attach(next);
     }
 
-    if ((bstrName.Length() == 0) ||
-        (bstrDescription.Length() == 0) ||
-        (bstrModule.Length() == 0) ||
-        (bstrClassGuid.Length() == 0))
+    if ((name.length() == 0) ||
+        (description.length() == 0) ||
+        (module.length() == 0) ||
+        (classGuid.length() == 0))
     {
         CLogging::LogError(_T("Invalid configuration. Missing child element"));
         return E_FAIL;
     }
 
     GUID guidClassId;
+    CComBSTR bstrClassGuid = classGuid.c_str();
     hr = IIDFromString(bstrClassGuid, (LPCLSID)&guidClassId);
     if (FAILED(hr))
     {
@@ -189,7 +190,7 @@ HRESULT CConfigurationLoaderHelper::ProcessInstrumentationMethodNode(_In_ BSTR b
         return E_INVALIDARG;
     }
 
-    CInstrumentationMethod* method = new CInstrumentationMethod(bstrInstrumentationMethodFolder, bstrName, bstrDescription, bstrModule, guidClassId, dwPriority);
+    CInstrumentationMethod* method = new CInstrumentationMethod(bstrInstrumentationMethodFolder, name.c_str(), description.c_str(), module.c_str(), guidClassId, dwPriority);
     methods.push_back(method);
 
     return S_OK;

@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "XmlDocWrapper.h"
-#include "Encoding.h"
+#include "../Common.Lib/systemstring.h"
 #include "StringUtils.h"
 
 using namespace ATL;
@@ -119,23 +119,20 @@ HRESULT CXmlDocWrapper::Load(_In_ LPCWSTR wszValue, _In_ bool isFile)
 #else
     LIBXML_TEST_VERSION
 
-        CAutoVectorPtr<char> utf8Value;
-    CEncoding::ConvertUtf16ToUtf8(wszValue, utf8Value);
-
-    size_t utf8BufLen = 0;
-    IfFailRet(StringUtils::StringLen(utf8Value.m_p, utf8BufLen));
-
+    // On Linux, SystemString is backed by utf8.
+    SystemString utf8Value(wszValue);
+    IfFailRet(utf8Value.Error());
     xmlDoc* pDocument = nullptr;
 
     if (isFile)
     {
-        pDocument = xmlReadFile(utf8Value.m_p, NULL, 0);
+        pDocument = xmlReadFile(utf8Value.c_str(), NULL, utf8Value.length());
     }
     else
     {
         xmlReadMemory(
-            utf8Value.m_p,  // buffer
-            utf8BufLen,     // size of the buffer
+            utf8Value.c_str(),   // buffer
+            utf8Value.length(),  // size of the buffer
             "",             // the base URL to use for the document
             NULL,           // document encoding
             0               // xmlParserOption
