@@ -46,13 +46,8 @@ using namespace ATL;
 #include <clrprofiler.h>
 #include <sal.h>
 
-// TODO: We should use the CommonLib xml doc wrapper instead.
 #ifndef PLATFORM_UNIX
-#include <msxml6.h>
-#include <Pathcch.h>
-#else
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include <PathCch.h>
 #endif
 
 #ifdef PLATFORM_UNIX

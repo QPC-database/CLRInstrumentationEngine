@@ -24,8 +24,6 @@ set(src_files
     ./LoggerService.cpp
     ./Logging.cpp
     ./StringUtils.cpp
-    ./XmlDocWrapper.cpp
-    ./XmlNode.cpp
 )
 
 add_lib(${PROJECT_NAME}

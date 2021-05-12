@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "InstrumentationMethod.h"
-#include "XmlDocWrapper.h"
+#include "../Common.Lib/XmlDocWrapper.h"
 #include "ConfigurationLoader.h"
 
 HRESULT CConfigurationLoader::LoadConfiguration(_In_ BSTR bstrConfigPath, _In_ std::vector<CInstrumentationMethod*>& methods)

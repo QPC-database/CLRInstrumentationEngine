@@ -16,6 +16,8 @@ set(src_files
     ./ImplQueryInterface.cpp
     ./refcount.cpp
     ./systemstring.cpp
+    ./XmlDocWrapper.cpp
+    ./XmlNode.cpp
 )
 
 add_lib(${PROJECT_NAME}
