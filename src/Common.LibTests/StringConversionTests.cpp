@@ -1,6 +1,8 @@
-﻿#include "pch.h"
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include "pch.h"
 #include "../Common.Lib/systemstring.h"
-#include <stdio.h>
 
 using namespace std;
 using namespace CommonLib;

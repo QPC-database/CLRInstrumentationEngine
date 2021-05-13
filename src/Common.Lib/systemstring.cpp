@@ -91,6 +91,13 @@ namespace CommonLib
 
     HRESULT SystemString::FromString(_In_ const WCHAR* lpzwStr, _Inout_ SystemString& result)
     {
+        if (lpzwStr == nullptr)
+        {
+            result = "";
+            result.m_hresult = E_INVALIDARG;
+            return result.m_hresult;
+        }
+
         size_t i = 0;
         const WCHAR* p = lpzwStr;
         // scan to a resonable length for the end of the string.
@@ -131,7 +138,16 @@ namespace CommonLib
 
     HRESULT SystemString::FromString(_In_ const CHAR* lpzStr, _Inout_ SystemString& result)
     {
-        result = SystemString(lpzStr);
+        if (lpzStr == nullptr)
+        {
+            result = "";
+            result.m_hresult = E_INVALIDARG;
+        }
+        else
+        {
+            result = SystemString(lpzStr);
+        }
+
         return result.m_hresult;
     }
 #else
@@ -180,12 +196,28 @@ namespace CommonLib
 
     HRESULT SystemString::FromString(_In_ const WCHAR* lpzwStr, _Inout_ SystemString& result)
     {
-        result = SystemString(lpzwStr);
+        if (lpzwStr != nullptr)
+        {
+            result = SystemString(lpzwStr);
+        }
+        else
+        {
+            result = _T("");
+            result.m_hresult = E_INVALIDARG;
+        }
+
         return result.m_hresult;
     }
 
     HRESULT SystemString::FromString(_In_ const CHAR* lpzStr, _Inout_ SystemString& result)
     {
+        if (lpzStr == nullptr)
+        {
+            result = _T("");
+            result.m_hresult = E_INVALIDARG;
+            return result.m_hresult;
+        }
+
         int required = MultiByteToWideChar(CP_UTF8, 0, lpzStr, /*null terminated*/ -1, nullptr, 0);
         if (required > 0)
         {

@@ -130,8 +130,11 @@ namespace CommonLib
             pAttributeNode->get_nodeValue(&varValueAttr);
             IfFailRet(SystemString::FromString(varValueAttr.bstrVal, sValue));
         }
+        else
+        {
+            return E_FAIL;
+        }
 
-        return S_OK;
     #else
         SystemString attrName(wszAttributeName);
         IfFailRet(attrName.Error());

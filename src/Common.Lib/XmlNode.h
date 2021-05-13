@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include "../Common.Headers/tstring.h"
-
-#ifndef PLATFORM_UNIX
-    struct IXMLDOMNode;
+#ifdef PLATFORM_UNIX
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #else
-    typedef struct _xmlNode xmlNode;
+#include <msxml6.h>
 #endif
+
+#include "../Common.Headers/tstring.h"
 
 namespace CommonLib
 {
