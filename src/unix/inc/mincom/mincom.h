@@ -43,10 +43,7 @@
 
 #include "callconv.h"
 
-// from the dotnet runtime Platform Abstraction Layer. We could consider
-// duplicating.
-#include "pal_mstypes.h"
-
+#include "mstypes.h"
 
 #include "no_sal.h"
 #include "no_sal2.h"

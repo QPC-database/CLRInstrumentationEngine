@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
-#include "../Common.Lib/Macros.h"
-#include "../Common.Lib/systemstring.h"
-#include "../Common.Lib/XmlNode.h"
-#include "../Common.Lib/XmlDocWrapper.h"
+#include "Common.Lib/Macros.h"
+#include "Common.Lib/systemstring.h"
+#include "Common.Lib/XmlNode.h"
+#include "Common.Lib/XmlDocWrapper.h"
 
 using namespace std;
 using namespace CommonLib;

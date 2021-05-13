@@ -50,6 +50,10 @@ endif()
 #    build_init (CPP, ClrInstrumentationEngine)
 #      will initialize the environment to build C++ ClrInstrumentationEngine sources.
 macro (build_init build_language build_type)
+    build_init_pal(${build_language} ${build_type} INCLUDE_PAL)
+endmacro (build_init build_language build_type)
+
+macro (build_init_pal build_language build_type pal_opt)
     set (PROJECT_BUILD_LANGUAGE, "${build_language}")
 
     if ("${build_language}" STREQUAL CPP)
@@ -94,8 +98,10 @@ macro (build_init build_language build_type)
     include_directories(${REPOSITORY_ROOT}/src/unix/inc/empty)
     include_directories(${REPOSITORY_ROOT}/src/unix/inc/winsdk)
     include_directories(${REPOSITORY_ROOT}/src/InstrumentationEngine.Api)
-    include_directories(${CORECLR_PAL_ROOT}/inc)
-    include_directories(${CORECLR_PAL_ROOT}/inc/rt)
+    if (NOT "${pal_opt}" STREQUAL "NO_PAL")
+        include_directories(${CORECLR_PAL_ROOT}/inc)
+        include_directories(${CORECLR_PAL_ROOT}/inc/rt)
+    endif()
     include_directories(${GENERATED_INCLUDE_DIR})
     include_directories(${REPOSITORY_ROOT}/inc/clr/extra)
 
@@ -158,7 +164,7 @@ macro (build_init build_language build_type)
     add_compile_options(-Werror)
 
     add_compile_options(-fPIC)
-endmacro (build_init)
+endmacro (build_init_pal)
 
 
 # Adds a library and optionally adds dependency on generated file pal_redefines.h for
@@ -358,5 +364,6 @@ add_subdirectory(InstrumentationEngine.Lib)
 add_subdirectory(InstrumentationEngine)
 
 enable_testing()
-add_subdirectory(Common.LibTests)
+add_subdirectory(Tests/CommonLibTests)
+add_subdirectory(Tests/InstrumentationEngineLibTests)
 

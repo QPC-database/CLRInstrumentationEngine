@@ -9,8 +9,11 @@ fetch_google_test()
 project(Common.LibTests)
 find_package(LibXml2 REQUIRED)
 
-include_directories(. ${LIBXML2_INCLUDE_DIR})
-build_init(CPP Common.LibTests)
+# the midl directory is needed to replace the rpc headers referenced by midl generated headers.
+include_directories(. ${REPOSITORY_ROOT}/src/unix/inc/midl ${REPOSITORY_ROOT}/src ${LIBXML2_INCLUDE_DIR})
+
+# don't use the PAL for tests
+build_init_pal(CPP Common.LibTests NO_PAL)
 
 #note: we purposfully exclude windows-only files,
 #including ModuleHandle.cpp, EventLoggingBase.cpp, and PathUtils.cpp

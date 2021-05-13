@@ -28,5 +28,5 @@ public:
     HRESULT LoadConfiguration(_In_ BSTR bstrConfigPath, _In_ std::vector<MicrosoftInstrumentationEngine::CInstrumentationMethod*>& methods);
 
 private:
-    HRESULT ProcessInstrumentationMethodNode(_In_ BSTR bstrInstrumentationMethodFolder, _In_ CommonLib::CXmlNode* pNode, _In_ std::vector< CInstrumentationMethod* >& methods);
+    HRESULT ProcessInstrumentationMethodNode(_In_ BSTR bstrInstrumentationMethodFolder, _In_ CommonLib::CXmlNode* pNode, _In_ std::vector<MicrosoftInstrumentationEngine::CInstrumentationMethod*>& methods);
 };

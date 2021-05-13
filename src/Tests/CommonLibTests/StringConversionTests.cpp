@@ -2,21 +2,21 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
-#include "../Common.Lib/systemstring.h"
+#include "Common.Lib/systemstring.h"
 
 using namespace std;
 using namespace CommonLib;
 TEST(StringConversionTests, u8u16test) {
     SystemString ss = u8"①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵";
     EXPECT_FALSE(ss.HasError());
-    tstring u16test = _WS("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
+    tstring u16test = _WT("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
     tstring tresult;
     EXPECT_EQ(0, ss.ToString(tresult));
     EXPECT_EQ(u16test, tresult);
 }
 
 TEST(StringConversionTests, u16u8test) {
-    SystemString ss = _WS("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
+    SystemString ss = _WT("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
     EXPECT_FALSE(ss.HasError());
     string u8test = u8"①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵";
     string u8result;
@@ -25,7 +25,7 @@ TEST(StringConversionTests, u16u8test) {
 }
 
 TEST(StringConversionTests, sysToU16Test) {
-    SystemString ss = _SS("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
+    SystemString ss = _ST("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
     tstring tresult;
     EXPECT_EQ(0, ss.ToString(tresult));
     SystemString systemResult(tresult);
@@ -34,7 +34,7 @@ TEST(StringConversionTests, sysToU16Test) {
 }
 
 TEST(StringConversionTests, sysToU8Test) {
-    SystemString ss = _SS("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
+    SystemString ss = _ST("①Ⅻㄨㄩ 啊阿鼾齄丂丄狚狛狜狝﨨﨩ˊˋ˙– ⿻〇㐀㐁䶴䶵");
     string result;
     EXPECT_EQ(0, ss.ToString(result));
     SystemString systemResult(result);

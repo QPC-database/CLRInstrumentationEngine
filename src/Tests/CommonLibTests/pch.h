@@ -22,16 +22,14 @@
 #endif
 
 #include <gtest/gtest.h>
-#include "../Common.Lib/refcount.h"
+#include "Common.Lib/refcount.h"
 
-#if !defined(_WS)
 #if defined(PLATFORM_UNIX)
-#define _WS(X) u ## X
-#define _SS(X) u8 ## X
+#define _WT(X) u ## X
+#define _ST(X) u8 ## X
 #else
-#define _WS(X) L ## X
-#define _SS(X) L ## X
-#endif
+#define _WT(X) L ## X
+#define _ST(X) L ## X
 #endif
 
 #define EXPECT_OK(X) EXPECT_EQ(S_OK, (X))
