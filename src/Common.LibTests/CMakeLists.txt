@@ -17,6 +17,7 @@ build_init(CPP Common.LibTests)
 set(src_files
     ./pch.cpp
     ./StringConversionTests.cpp
+    ./XmlDocumentTests.cpp
 )
 
 add_executable(
@@ -26,6 +27,7 @@ add_executable(
 
 target_link_libraries(
     ${PROJECT_NAME}
+    ${LIBXML2_LIBRARIES}
     Common.Lib
     gtest_main
 )

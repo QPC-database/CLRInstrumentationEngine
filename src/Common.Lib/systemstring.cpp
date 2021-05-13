@@ -52,8 +52,10 @@ namespace CommonLib
     HRESULT SystemString::ToString(_Inout_ tstring& str)
     {
         Ciconv icnv(iconv_open("UTF-16LE", "UTF-8"));
-        size_t inputLength = length();
-        size_t outputMax = inputLength * 4;
+        
+        // Include the null terminator.
+        size_t inputLength = length()+1;
+        size_t outputMax = (inputLength+1) * 4;
         unique_ptr<WCHAR[]> buffer(new WCHAR[outputMax]);
 
         const char* pOrig = c_str();
@@ -112,14 +114,15 @@ namespace CommonLib
         if (i > 10000)
         {
             result = "";
-            return false;
+            return E_FAIL;
         }
 
 
         Ciconv icnv(iconv_open("UTF-8", "UTF-16LE"));
 
-        size_t inbytes = i*2;
-        size_t outbytes = i*4;
+        // include the null terminator in the input string.
+        size_t inbytes = (i+1)*2;
+        size_t outbytes = (i+1)*4;
         unique_ptr<char[]> buffer(new char[outbytes]);
         char* input = (char*)lpzwStr;
         char* output = buffer.get();

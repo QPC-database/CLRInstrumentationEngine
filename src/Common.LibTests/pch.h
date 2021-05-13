@@ -33,3 +33,8 @@
 #define _SS(X) L ## X
 #endif
 #endif
+
+#define EXPECT_OK(X) EXPECT_EQ(S_OK, (X))
+#define EXPECT_FAIL(X) EXPECT_TRUE(FAILED(X))
+#define EXPECT_NULL(X) EXPECT_EQ(nullptr, (X))
+#define EXPECT_NOT_NULL(X) EXPECT_NE(nullptr, (X))

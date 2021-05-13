@@ -133,7 +133,7 @@ namespace CommonLib
         }
         else
         {
-            xmlReadMemory(
+            pDocument = xmlReadMemory(
                 utf8Value.c_str(),   // buffer
                 utf8Value.length(),  // size of the buffer
                 "",             // the base URL to use for the document

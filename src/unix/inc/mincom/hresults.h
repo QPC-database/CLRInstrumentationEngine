@@ -19,5 +19,5 @@
 #define E_PENDING                        (HRESULT)(0x8000000AL)
 #define E_BOUNDS                         (HRESULT)(0x8000000BL)
 
-#define FAILED(hr) (hr < 0)
-#define SUCCEEDED(hr) (hr >= 0)
+#define FAILED(_HR) (((HRESULT)(_HR)) < 0)
+#define SUCCEEDED(_HR) (((HRESULT)(_HR)) >= 0)
