@@ -91,22 +91,6 @@ namespace CommonLib
         /// </summary>
         /// <param name="original">The original string</param>
         /// <param name="result">The local OS string</param>
-        /// <returns>S_OK for success. Error code otherwise</return>
-        static HRESULT FromString(_In_ const tstring& origninal, _Inout_ SystemString& result);
-
-        /// <summary>
-        /// Utility function to convert a UTF8 (Linux) string to the local OS string
-        /// </summary>
-        /// <param name="original">The original string</param>
-        /// <param name="result">The local OS string</param>
-        /// <returns>S_OK for success. Error code otherwise.</return>
-        static HRESULT FromString(_In_ const std::string& original, _Inout_ SystemString& result);
-
-        /// <summary>
-        /// Utility function to convert a UTF16LE (Windows) string to the local OS string
-        /// </summary>
-        /// <param name="original">The original string</param>
-        /// <param name="result">The local OS string</param>
         /// <returns>S_OK for success, error code otherwise.</return>
         static HRESULT FromString(_In_ const WCHAR* lpzwStr, _Inout_ SystemString& result);
 
@@ -115,8 +99,16 @@ namespace CommonLib
         /// </summary>
         /// <param name="original">The original string</param>
         /// <param name="result">The local OS string</param>
-        /// <returns>true for success, false otherwise</return>
+        /// <returns>S_OK for success, error otherwise</return>
         static HRESULT FromString(_In_ const CHAR* lpzStr, _Inout_ SystemString& result);
+
+        /// <summary>
+        /// Utility function to convert a UTF8 (Linux) string to a UTF16LE (Windows) string.
+        /// </summary>
+        /// <param name="lpzStr">The input string.</param>
+        /// <param name="result">The output string.</param>
+        /// <returns>S_OK for success, error otherwise.</returns>
+        static HRESULT Convert(_In_ const CHAR* lpzStr, _Inout_ tstring& result);
     };
 
 }

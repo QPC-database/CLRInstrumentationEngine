@@ -32,6 +32,7 @@
 #define _ST(X) L ## X
 #endif
 
+#define ASSERT_OK(X) ASSERT_EQ(S_OK, (X))
 #define EXPECT_OK(X) EXPECT_EQ(S_OK, (X))
 #define EXPECT_FAIL(X) EXPECT_TRUE(FAILED(X))
 #define EXPECT_NULL(X) EXPECT_EQ(nullptr, (X))

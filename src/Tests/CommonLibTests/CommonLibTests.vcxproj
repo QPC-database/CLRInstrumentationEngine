@@ -51,8 +51,8 @@
     <ProjectReference Include="$(EnlistmentRoot)\src\Common.Lib\Common.Lib.vcxproj">
       <Project>{a0585fab-548f-44b3-bcbe-9242cbc26a19}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(EnlistmentRoot)\src\Dependencies\NativeDependencies.csproj">
-      <Project>{d1f6a1a5-d8d1-44b3-b59f-6bfe236f7f46}</Project>
+    <ProjectReference Include="..\..\Dependencies\NativeTestDependencies.csproj">
+      <Project>{9f97b063-5acf-409a-8dcc-4bd9ff817d1d}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>

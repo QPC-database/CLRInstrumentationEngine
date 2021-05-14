@@ -18,6 +18,7 @@ set(src_files
     ./systemstring.cpp
     ./XmlDocWrapper.cpp
     ./XmlNode.cpp
+    ./iids.cpp
 )
 
 add_lib(${PROJECT_NAME}

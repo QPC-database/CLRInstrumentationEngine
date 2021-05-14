@@ -3,7 +3,7 @@
      Licensed under the MIT License. -->
 <Project>
   <PropertyGroup>
-    <ProjectGuid>{D1F6A1A5-D8D1-44B3-B59F-6BFE236F7F46}</ProjectGuid>
+    <ProjectGuid>{9F97B063-5ACF-409A-8DCC-4BD9FF817D1D}</ProjectGuid>
     <ShouldSign>false</ShouldSign>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <SubComponent>$(TargetFramework)</SubComponent>
@@ -22,31 +22,12 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
-  <Choose>
-    <When Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
-      <ItemGroup>
-        <PackageReference Include="Microsoft.VisualStudio.Debugger.CoreCLRPAL" Version="$(CoreClrPalVersion)">
-          <ExcludeAssets>All</ExcludeAssets>
-        </PackageReference>
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="RemoteUnitTestExecutor" Version="$(RemoteUnitExecutorVersion)">
-          <ExcludeAssets>All</ExcludeAssets>
-          <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.ApplicationInsights.Agent.Intercept" Version="$(ApplicationInsightsAgentInterceptVersion)">
-          <ExcludeAssets>All</ExcludeAssets>
-          <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="$(MicroBuildCoreVersion)">
-          <ExcludeAssets>All</ExcludeAssets>
-          <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.googletest.v140.windesktop.msvcstl.static.rt-static" Version="1.8.1.3">
+      <ExcludeAssets>All</ExcludeAssets>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="$(EnlistmentRoot)\build\Common.targets" />
   <!-- Project does not compile assembly; override to avoid CS2008. -->

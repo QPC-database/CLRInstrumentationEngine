@@ -7,12 +7,13 @@
 #include <errno.h>
 #endif
 
-
 using namespace std;
 
 namespace CommonLib
 {
 #ifdef PLATFORM_UNIX
+
+    static const SIZE_T MAX_STRING_LEN = 10000;
     struct Ciconv {
         iconv_t m_iconv;
         Ciconv(const iconv_t& iconv) : m_iconv(iconv) {}
@@ -51,44 +52,13 @@ namespace CommonLib
 
     HRESULT SystemString::ToString(_Inout_ tstring& str)
     {
-        Ciconv icnv(iconv_open("UTF-16LE", "UTF-8"));
-        
-        // Include the null terminator.
-        size_t inputLength = length()+1;
-        size_t outputMax = (inputLength+1) * 4;
-        unique_ptr<WCHAR[]> buffer(new WCHAR[outputMax]);
-
-        const char* pOrig = c_str();
-        char* pNew = (char*)buffer.get();
-        size_t count = iconv(icnv.m_iconv, (char**)&pOrig, &inputLength, &pNew, &outputMax);
-        if (count == (size_t)-1)
-        {
-            HRESULT hr = ErrnoToHResult(errno);
-            str = u"";
-            return hr;
-        }
-
-        str = buffer.get();
-        return S_OK;
+        return Convert(c_str(), str);
     }
 
     HRESULT SystemString::ToString(_Inout_ string& str)
     {
         str = *this;
         return S_OK;
-       
-    }
-
-    HRESULT SystemString::FromString(_In_ const tstring& original, _Inout_ SystemString& result)
-    {
-        return FromString(original.c_str(), result);
-    }
-
-    HRESULT SystemString::FromString(_In_ const std::string& original, _Inout_ SystemString& result)
-    {
-        result = original;
-        result.m_hresult = S_OK;
-        return result.m_hresult;
     }
 
     HRESULT SystemString::FromString(_In_ const WCHAR* lpzwStr, _Inout_ SystemString& result)
@@ -103,7 +73,7 @@ namespace CommonLib
         size_t i = 0;
         const WCHAR* p = lpzwStr;
         // scan to a resonable length for the end of the string.
-        for (i = 0; i < 10000; ++i, ++p)
+        for (i = 0; i < MAX_STRING_LEN; ++i, ++p)
         {
             if (*p == (WCHAR)0)
             {
@@ -111,7 +81,7 @@ namespace CommonLib
             }
         }
 
-        if (i > 10000)
+        if (i > MAX_STRING_LEN)
         {
             result = "";
             return E_FAIL;
@@ -153,7 +123,37 @@ namespace CommonLib
 
         return result.m_hresult;
     }
+
+    HRESULT SystemString::Convert(_In_ const CHAR* lpzStr, _Inout_ tstring& result)
+    {
+        Ciconv icnv(iconv_open("UTF-16LE", "UTF-8"));
+
+        // Include the null terminator.
+        size_t inputLength = strnlen(lpzStr, MAX_STRING_LEN)  + 1;
+
+        if (inputLength >= MAX_STRING_LEN)
+        {
+            return E_BOUNDS;
+        }
+
+        size_t outputMax = (inputLength + 1) * 4;
+        unique_ptr<WCHAR[]> buffer(new WCHAR[outputMax]);
+
+        const char* pOrig = lpzStr;
+        char* pNew = (char*)buffer.get();
+        size_t count = iconv(icnv.m_iconv, (char**)&pOrig, &inputLength, &pNew, &outputMax);
+        if (count == (size_t)-1)
+        {
+            HRESULT hr = ErrnoToHResult(errno);
+            result = u"";
+            return hr;
+        }
+
+        result = buffer.get();
+        return S_OK;
+    }
 #else
+
     SystemString::SystemString(_In_ const string& original)
     {
         m_hresult = FromString(original.c_str(), *this);
@@ -186,16 +186,6 @@ namespace CommonLib
         return HRESULT_FROM_WIN32(errorCode);
     }
 
-
-    static HRESULT FromString(_In_ const tstring& original, _Inout_ SystemString& result)
-    {
-        return FromString(original.c_str(), result);
-    }
-
-    static HRESULT FromString(_In_ const std::string& original, _Inout_ SystemString& result)
-    {
-        return FromString(original.c_str(), result);
-    }
 
     HRESULT SystemString::FromString(_In_ const WCHAR* lpzwStr, _Inout_ SystemString& result)
     {
@@ -234,6 +224,15 @@ namespace CommonLib
         result = L"";
         result.m_hresult = HRESULT_FROM_WIN32(errorCode);
         return result.m_hresult;
+    }
+
+    HRESULT SystemString::Convert(_In_ const CHAR* lpzStr, _Inout_ tstring& result)
+    {
+        HRESULT hr;
+        SystemString sysString;
+        IfFailRet(FromString(lpzStr, sysString));
+        result = std::move(sysString);
+        return S_OK;
     }
 #endif
 }

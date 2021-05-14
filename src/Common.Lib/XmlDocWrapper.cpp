@@ -129,7 +129,7 @@ namespace CommonLib
 
         if (isFile)
         {
-            pDocument = xmlReadFile(utf8Value.c_str(), NULL, utf8Value.length());
+            pDocument = xmlReadFile(utf8Value.c_str(), NULL, XML_PARSE_NOBLANKS);
         }
         else
         {
@@ -138,7 +138,7 @@ namespace CommonLib
                 utf8Value.length(),  // size of the buffer
                 "",             // the base URL to use for the document
                 NULL,           // document encoding
-                0               // xmlParserOption
+                XML_PARSE_NOBLANKS               // xmlParserOption
             );
         }
 

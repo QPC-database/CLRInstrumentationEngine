@@ -11,7 +11,6 @@
 
 
 #ifdef PLATFORM_UNIX
-
 #include "unix.h"
 #include <ole.h>
 #include <palrt.h>
@@ -38,7 +37,28 @@
 #include <atlsync.h>
 
 #include <gtest/gtest.h>
+
+// __valid is used as a SAL annotation, but it is also
+// used as type alias on some Linux systems. Undefine it
+// before including headers that use the type alias.
+#ifdef __valid
+#define __valid__temp __valid
+#undef __valid
+#endif
+
+#include <experimental/filesystem>
+
+#ifdef __valid__temp
+#define __valid __valid__temp
+#undef __valid__temp
+#endif
+
+#include "cor.h"
+#include "corprof.h"
+
+#include "Common.Lib/systemstring.h"
 #include "Common.Lib/refcount.h"
+
 
 #if defined(PLATFORM_UNIX)
 #define _WT(X) u ## X
@@ -48,73 +68,10 @@
 #define _ST(X) L ## X
 #endif
 
-// typedef mocks for clr types
-/*
-typedef UINT_PTR ProcessID;
-typedef UINT_PTR AssemblyID;
-typedef UINT_PTR AppDomainID;
-typedef UINT_PTR ModuleID;
-typedef UINT_PTR ClassID;
-typedef UINT_PTR ThreadID;
-typedef UINT_PTR ContextID;
-typedef UINT_PTR FunctionID;
-typedef UINT_PTR ObjectID;
-typedef UINT_PTR GCHandleID;
-typedef UINT_PTR COR_PRF_ELT_INFO;
-typedef UINT_PTR ReJITID;
-
-typedef ULONG   CorElementType;
-typedef LPVOID  mdScope;                // Obsolete; not used in the runtime.
-typedef ULONG32 mdToken;                // Generic token
-
-typedef mdToken mdModule;               // Module token (roughly, a scope)
-typedef mdToken mdTypeRef;              // TypeRef reference (this or other scope)
-typedef mdToken mdTypeDef;              // TypeDef in this scope
-typedef mdToken mdFieldDef;             // Field in this scope
-typedef mdToken mdMethodDef;            // Method in this scope
-typedef mdToken mdParamDef;             // param token
-typedef mdToken mdInterfaceImpl;        // interface implementation token
-
-typedef mdToken mdMemberRef;            // MemberRef (this or other scope)
-typedef mdToken mdCustomAttribute;      // attribute token
-typedef mdToken mdPermission;           // DeclSecurity
-
-typedef mdToken mdSignature;            // Signature object
-typedef mdToken mdEvent;                // event token
-typedef mdToken mdProperty;             // property token
-
-typedef mdToken mdModuleRef;            // Module reference (for the imported modules)
-
-// Assembly tokens.
-typedef mdToken mdAssembly;             // Assembly token.
-typedef mdToken mdAssemblyRef;          // AssemblyRef token.
-typedef mdToken mdFile;                 // File token.
-typedef mdToken mdExportedType;         // ExportedType token.
-typedef mdToken mdManifestResource;     // ManifestResource token.
-
-typedef mdToken mdTypeSpec;             // TypeSpec object
-
-typedef mdToken mdGenericParam;         // formal parameter to generic type or method
-typedef mdToken mdMethodSpec;           // instantiation of a generic method
-typedef mdToken mdGenericParamConstraint; // constraint on a formal generic parameter
-
-// Application string.
-typedef mdToken mdString;               // User literal string token.
-
-typedef mdToken mdCPToken;              // constantpool token
-
-typedef struct _ASSEMBLYMETADATA ASSEMBLYMETADATA;
-
-typedef void * RPC_IF_HANDLE;
-
-typedef WCHAR * BSTR;
-*/
-#include "cor.h"
-#include "corprof.h"
 
 using namespace std;
 
-#define EXPECT_OK(X) EXPECT_EQ(S_OK, (X))
-#define EXPECT_FAIL(X) EXPECT_TRUE(FAILED(X))
-#define EXPECT_NULL(X) EXPECT_EQ(nullptr, (X))
-#define EXPECT_NOT_NULL(X) EXPECT_NE(nullptr, (X))
+#define ASSERT_OK(X) ASSERT_EQ(S_OK, (X))
+#define ASSERT_FAIL(X) (ASSERT_TRUE(FAILED(X)))
+#define ASSERT_NULL(X) (ASSERT_EQ(nullptr, (X)))
+#define ASSERT_NOT_NULL(X) (ASSERT_NE(nullptr, (X)))

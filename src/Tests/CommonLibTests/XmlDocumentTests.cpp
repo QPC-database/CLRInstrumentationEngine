@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "pch.h"
+#include <sstream>
 #include "Common.Lib/Macros.h"
 #include "Common.Lib/systemstring.h"
 #include "Common.Lib/XmlNode.h"
@@ -28,21 +29,11 @@ struct CoInit
 
 };
 
-TEST(XmlTests, SimpleXmlTest)
+void CheckSimpleXml(tstring& xmlString)
 {
-    // Initialze for COM, if needed.
-    CoInit co;
-    tstring xmlString =
-        _T("<First>")
-            _T("<Second>")
-                _T("<Third attr1='stuff' attr2='things'/>")
-                _T("<Fourth>Internal Text</Fourth>")
-            _T("</Second>")
-        _T("</First>");
-
     CComPtr<CXmlDocWrapper> pDocWrapper;
     pDocWrapper.Attach(new CXmlDocWrapper());
-    EXPECT_OK(pDocWrapper->LoadContent(xmlString.c_str()));
+    ASSERT_OK(pDocWrapper->LoadContent(xmlString.c_str()));
 
     CComPtr<CXmlNode> pCurrNode;
     EXPECT_OK(pDocWrapper->GetRootNode(&pCurrNode));
@@ -107,4 +98,34 @@ TEST(XmlTests, SimpleXmlTest)
         // end of the xml
         EXPECT_NULL(pCurrNode.p);
     }
+}
+
+TEST(XmlTests, SimpleXmlTest)
+{
+    // Initialze for COM, if needed.
+    CoInit co;
+    tstring xmlString =
+        _T("<First>")
+            _T("<Second>")
+                _T("<Third attr1='stuff' attr2='things'/>")
+                _T("<Fourth>Internal Text</Fourth>")
+            _T("</Second>")
+        _T("</First>");
+    CheckSimpleXml(xmlString);
+}
+
+TEST(XmlTests, WhiteSpaceSimpleXmlTest)
+{
+    stringstream sstream;
+    sstream <<
+        "<First>" << endl <<
+        "  <Second>" << endl <<
+        "    <Third attr1='stuff' attr2=things>    " <<
+        "      <Fourth>Internal Text</Fourth> " <<
+        "\t</Second>" <<
+        "</First>";
+
+    tstring xmlString;
+    ASSERT_OK(SystemString::Convert(sstream.str().c_str(), xmlString));
+    CheckSimpleXml(xmlString);
 }

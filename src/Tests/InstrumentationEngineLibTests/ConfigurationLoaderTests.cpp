@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 #include "pch.h"
 #include <fstream>
-//#include <experimental/filesystem>
+
 #include "Common.Lib/Macros.h"
 #include "Common.Lib/systemstring.h"
 #include "Common.Lib/XmlNode.h"
@@ -15,7 +15,7 @@
 using namespace std;
 using namespace CommonLib;
 using namespace MicrosoftInstrumentationEngine;
-//namespace fs = std::experimental::filesystem;
+namespace fs = std::experimental::filesystem;
 
 #ifdef PLATFORM_UNIX
 using sysfstream = fstream;
@@ -42,30 +42,44 @@ struct CoInit
 
 };
 
+HRESULT PathToWChar(fs::path path, tstring& result)
+{
+    #ifdef PLATFORM_UNIX
+        HRESULT hr;
+        SystemString systemPath(path.string());
+        IfFailRet(systemPath.Error());
+        IfFailRet(systemPath.ToString(result));
+    #else
+        result = path.wstring();
+    #endif
+        return S_OK;
+}
+
 TEST(ConfigurationTests, LoadConfigurationLoadsOneInstrumentationMethodCorrectly)
 {
     // Initialze for COM, if needed.
     CoInit co;
-    auto fileName = _ST("/Config.xml");
-    //if (exists(fileName))
-    //{
-    //    remove(fileName);
-    //}
+    auto fileName = fs::current_path() / _ST("ConfigLoads.xml");
+    if (exists(fileName))
+    {
+        remove(fileName);
+    }
 
     sysfstream output;
     output.open(fileName, ios_base::app | ios_base::out);
     WCHAR error[256] = { 0 };
 
-    EXPECT_TRUE(!output.fail() && !output.bad());
+    ASSERT_TRUE(!output.fail() && !output.bad());
 
+    //output << _ST("<?xml?>") << endl;
     output << _ST("<InstrumentationEngineConfiguration>") << std::endl;
-    output << _ST("<InstrumentationMethod>") << std::endl;
-    output << _ST("  <Name>Squid Instrumentation</Name>") << std::endl;
-    output << _ST("  <Description>Dynamically make squids swim</Description>") << std::endl;
-    output << _ST("  <Module>SeafoodInstrumentation.dll</Module>") << std::endl;
-    output << _ST("  <ClassGuid>{249E89A6-12D9-4E03-82FF-7FEAA41310E9}</ClassGuid>") << std::endl;
-    output << _ST("  <Priority>50</Priority>") << std::endl;
-    output << _ST("</InstrumentationMethod>") << std::endl;
+    output << _ST("  <InstrumentationMethod>") << std::endl;
+    output << _ST("    <Name>Squid Instrumentation</Name>") << std::endl;
+    output << _ST("    <Description>Dynamically make squids swim</Description>") << std::endl;
+    output << _ST("    <Module>SeafoodInstrumentation.dll</Module>") << std::endl;
+    output << _ST("    <ClassGuid>{249E89A6-12D9-4E03-82FF-7FEAA41310E9}</ClassGuid>") << std::endl;
+    output << _ST("    <Priority>50</Priority>") << std::endl;
+    output << _ST("  </InstrumentationMethod>") << std::endl;
     output << _ST("</InstrumentationEngineConfiguration>") << std::endl;
 
     output.close();
@@ -73,28 +87,29 @@ TEST(ConfigurationTests, LoadConfigurationLoadsOneInstrumentationMethodCorrectly
     CConfigurationLoader loader;
     std::vector<CInstrumentationMethod*> methods;
 
-    EXPECT_OK(loader.LoadConfiguration((BSTR)fileName, methods));
+    tstring filePath;
+    ASSERT_OK(PathToWChar(fileName, filePath));
+    ASSERT_OK(loader.LoadConfiguration((BSTR)filePath.c_str(), methods));
 
-    EXPECT_EQ((size_t)1, methods.size());
+    ASSERT_EQ((size_t)1, methods.size());
     auto method = methods.at(0);
 
     GUID expected = { 0x249E89A6, 0x12D9, 0x4E03, { 0x82 ,0xFF, 0x7F, 0xEA, 0xA4, 0x13, 0x10, 0xE9 } };
-    EXPECT_TRUE(method->GetClassId() == expected);
+    ASSERT_TRUE(method->GetClassId() == expected);
 }
 
-TEST(ConfigurationTEsts, LoadConfigurationDoesNotCrashWhenDescriptionIsMissing)
+TEST(ConfigurationTests, LoadConfigurationDoesNotCrashWhenDescriptionIsMissing)
 {
     CoInit co;
-    auto fileName = _ST("/Config.xml");
-    //if (exists(fileName))
-    //{
-    //    remove(fileName);
-    //}
+    auto fileName = fs::current_path() / _ST("ConfigFails.xml");
+    if (exists(fileName))
+    {
+        remove(fileName);
+    }
 
     wfstream output;
     output.open(fileName, ios_base::app | ios_base::out);
-    WCHAR error[256] = { 0 };
-    EXPECT_TRUE(!output.fail() && !output.bad());
+    ASSERT_TRUE(!output.fail() && !output.bad());
 
     output << _ST("<InstrumentationEngineConfiguration>") << std::endl;
     output << _ST("<InstrumentationMethod>") << std::endl;
@@ -110,7 +125,9 @@ TEST(ConfigurationTEsts, LoadConfigurationDoesNotCrashWhenDescriptionIsMissing)
     CConfigurationLoader loader;
     std::vector<CInstrumentationMethod*> methods;
 
-    EXPECT_EQ(E_FAIL, loader.LoadConfiguration((BSTR)fileName, methods));
+    tstring filePath;
+    ASSERT_OK(PathToWChar(fileName, filePath));
+    ASSERT_EQ(E_FAIL, loader.LoadConfiguration((BSTR)filePath.c_str(), methods));
 
-    EXPECT_EQ((size_t)0, methods.size());
+    ASSERT_EQ((size_t)0, methods.size());
 }

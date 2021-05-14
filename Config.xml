@@ -1,0 +1,10 @@
+<xml/>
+<InstrumentationEngineConfiguration>
+  <InstrumentationMethod>
+    <Name>Squid Instrumentation</Name>
+    <Description>Dynamically make squids swim</Description>
+    <Module>SeafoodInstrumentation.dll</Module>
+    <ClassGuid>{249E89A6-12D9-4E03-82FF-7FEAA41310E9}</ClassGuid>
+    <Priority>50</Priority>
+  </InstrumentationMethod>
+</InstrumentationEngineConfiguration>

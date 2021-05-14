@@ -47,16 +47,16 @@ endif()
 
 target_link_libraries(
     ${PROJECT_NAME}
-    Common.Lib
     pthread
     stdc++
     ${LIBXML2_LIBRARIES}
     ${CORECLRPAL}
     ${LINUXPAL}
     ${ATL}
-    palrt
     InstrumentationEngine.Api
     InstrumentationEngine.Lib
+    Common.Lib
+    palrt
     corguids
     :libuuid.so
     :libunwind-x86_64.so
