@@ -1275,7 +1275,7 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::GetIntermediateRenderedFunc
 
     if (pcbMethodSize != nullptr)
     {
-        *pcbMethodSize = m_pIntermediateRenderedMethod.size();
+        *pcbMethodSize = static_cast<ULONG>(m_pIntermediateRenderedMethod.size());
     }
 
     CLogging::LogMessage(_T("End CMethodInfo::GetIntermediateRenderedFunctionBody"));
@@ -1884,13 +1884,13 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::GetFinalInstrumentation(_Ou
     {
         // raw profiler did not instrument the method. Use the intermediate rendered method
         // from the instrumentation methods.
-        *pcbMethodBody = m_pIntermediateRenderedMethod.size();
+        *pcbMethodBody = static_cast<DWORD>(m_pIntermediateRenderedMethod.size());
         *ppMethodBody = m_pIntermediateRenderedMethod.data();
     }
     else
     {
         // raw profiler did instrument the method. Use the final rendered method
-        *pcbMethodBody = m_pFinalRenderedMethod.size();
+        *pcbMethodBody = static_cast<DWORD>(m_pFinalRenderedMethod.size());
         *ppMethodBody = m_pFinalRenderedMethod.data();
     }
 

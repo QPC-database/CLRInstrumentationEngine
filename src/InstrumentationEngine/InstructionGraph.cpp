@@ -388,10 +388,16 @@ HRESULT MicrosoftInstrumentationEngine::CInstructionGraph::EncodeIL(
 
         if (!bIsNewInstruction)
         {
+            // Check for overflow.
+            IfFalseRet((cCorILMap + 1) > cCorILMap, E_BOUNDS);
             cCorILMap++;
         }
 
-        cbBuffer += dwInstructionSize;
+        // Check for overflow
+        ULONG cbBufferTemp = cbBuffer + dwInstructionSize;
+        IfFalseRet(cbBufferTemp >= cbBuffer, E_BOUNDS);
+
+        cbBuffer = cbBufferTemp;
         pInstruction = pInstruction->NextInstructionInternal();
     }
 
