@@ -721,8 +721,9 @@ HRESULT CProfilerManager::LoadInstrumentationMethods(_In_ CConfigurationSource* 
 }
 
 HRESULT CProfilerManager::RemoveInstrumentationMethod(
-    _In_ IInstrumentationMethod* pInstrumentationMethod)
+    _In_opt_ IInstrumentationMethod* pInstrumentationMethod)
 {
+    IfNullRet(pInstrumentationMethod);
     HRESULT hr = S_OK;
     {
         DWORD dwFlags = 0;

@@ -1065,7 +1065,7 @@ void MicrosoftInstrumentationEngine::CModuleInfo::SetILInstrumentationMap(_In_ C
     m_ilMaps[CMethodKey(methodDef, functionId)] = pMap;
 }
 
-HRESULT MicrosoftInstrumentationEngine::CModuleInfo::GetILInstrumentationMap(_In_ CMethodJitInfo* pMethodJitInfo, _In_ ULONG32 cMap, _Out_writes_(cMap) COR_IL_MAP* pMap, _Out_ ULONG32* pcNeeded)
+HRESULT MicrosoftInstrumentationEngine::CModuleInfo::GetILInstrumentationMap(_In_ CMethodJitInfo* pMethodJitInfo, _In_ ULONG32 cMap, _Out_writes_opt_(cMap) COR_IL_MAP* pMap, _Out_ ULONG32* pcNeeded)
 {
     IfNullRet(pcNeeded);
     HRESULT hr;

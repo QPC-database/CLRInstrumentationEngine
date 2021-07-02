@@ -242,11 +242,11 @@ HRESULT CProfilerManagerForInstrumentationMethod::LogMessageInternal(_In_ const 
         switch (logFlag)
         {
         case LoggingFlags_Errors:
-            return m_pProfilerManager->LogErrorEx(wszBuffer, m_wszInstrumentationMethodGuid.c_str());
+            return m_pProfilerManager->LogErrorEx(wszBuffer, m_wszInstrumentationMethodGuid.c_str()); // lgtm[cpp/non-constant-format]
         case LoggingFlags_Trace:
-            return m_pProfilerManager->LogMessageEx(wszBuffer, m_wszInstrumentationMethodGuid.c_str());
+            return m_pProfilerManager->LogMessageEx(wszBuffer, m_wszInstrumentationMethodGuid.c_str()); // lgtm[cpp/non-constant-format]
         case LoggingFlags_InstrumentationResults:
-            return m_pProfilerManager->LogDumpMessageEx(wszBuffer, m_wszInstrumentationMethodGuid.c_str());
+            return m_pProfilerManager->LogDumpMessageEx(wszBuffer, m_wszInstrumentationMethodGuid.c_str()); // lgtm[cpp/non-constant-format]
         default:
             return S_OK;
         }
