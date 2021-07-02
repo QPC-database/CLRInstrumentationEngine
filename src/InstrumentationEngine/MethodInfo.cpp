@@ -36,8 +36,6 @@ MicrosoftInstrumentationEngine::CMethodInfo::CMethodInfo(
     m_dwILStreamLen(0),
     m_localVariables(nullptr),
     m_origLocalVariables(nullptr),
-    m_cbIntermediateRenderedMethod(0),
-    m_cbFinalRenderedMethod(0),
     m_bIsInstrumented(false),
     m_dwRejitCodeGenFlags(0),
     m_bDeleteCorSig(false),
@@ -347,10 +345,10 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::ApplyIntermediateMethodInst
         IfFailRet(InitializeInstructionsAndExceptions());
     }
 
-    ATL::CAutoVectorPtr<COR_IL_MAP> pCorILMap;
+    vector<COR_IL_MAP> pCorILMap;
     DWORD mapSize;
-    IfFailRet(m_pInstructionGraph->EncodeIL(&m_pILStream, &m_dwILStreamLen, &pCorILMap, &mapSize));
-    IfFailRet(MergeILInstrumentedCodeMap(mapSize, pCorILMap));
+    IfFailRet(m_pInstructionGraph->EncodeIL(m_pILStream, &m_dwILStreamLen, pCorILMap, &mapSize));
+    IfFailRet(MergeILInstrumentedCodeMap(mapSize, pCorILMap.data()));
 
     if (m_localVariables)
     {
@@ -372,7 +370,7 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::CreateILFunctionBody()
 {
     HRESULT hr = S_OK;
 
-    if (m_pIntermediateRenderedMethod != nullptr)
+    if (m_pIntermediateRenderedMethod.empty())
     {
         CLogging::LogError(_T("CMethodInfo::CreateILFunctionBody - intermediate method body has already been set."));
         return E_FAIL;
@@ -412,10 +410,9 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::CreateILFunctionBody()
     cbNewMethodSize = cbNewMethodSize + /* header + IL */ nNewDelta + cbSehExtra /* SEH stuff */;
 
     // allocate memory
-    m_pIntermediateRenderedMethod.Allocate(cbNewMethodSize);
-    m_cbIntermediateRenderedMethod = cbNewMethodSize;
+    m_pIntermediateRenderedMethod.resize(cbNewMethodSize);
 
-    COR_ILMETHOD_FAT* pNewMethod = (COR_ILMETHOD_FAT*)(m_pIntermediateRenderedMethod.m_p);
+    COR_ILMETHOD_FAT* pNewMethod = (COR_ILMETHOD_FAT*)(m_pIntermediateRenderedMethod.data());
 
     // copy old header.
     *pNewMethod = m_newCorHeader;
@@ -437,7 +434,7 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::CreateILFunctionBody()
     // copy the function body
     if  (cbNewMethodSizeWithoutHeader > 0)
     {
-        IfFailRetErrno(memcpy_s((BYTE*)pNewMethod + FAT_HEADER_SIZE, cbNewMethodSizeWithoutHeader, m_pILStream, cbNewMethodSizeWithoutHeader));
+        IfFailRetErrno(memcpy_s((BYTE*)pNewMethod + FAT_HEADER_SIZE, cbNewMethodSizeWithoutHeader, m_pILStream.data(), cbNewMethodSizeWithoutHeader));
     }
 
     // add SEH sections
@@ -1265,7 +1262,7 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::GetIntermediateRenderedFunc
 
     CLogging::LogMessage(_T("Start CMethodInfo::GetIntermediateRenderedFunctionBody"));
 
-    if (!this->IsInstrumented() || m_pIntermediateRenderedMethod == nullptr)
+    if (!this->IsInstrumented() || m_pIntermediateRenderedMethod.empty())
     {
         CLogging::LogError(_T("CMethodInfo::GetIntermediateRenderedFunctionBody should only be called if a method body has been set for this function"));
         return E_FAIL;
@@ -1273,12 +1270,12 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::GetIntermediateRenderedFunc
 
     if (ppMethodHeader != nullptr)
     {
-        *ppMethodHeader = (LPCBYTE)m_pIntermediateRenderedMethod;
+        *ppMethodHeader = (LPCBYTE)m_pIntermediateRenderedMethod.data();
     }
 
     if (pcbMethodSize != nullptr)
     {
-        *pcbMethodSize = m_cbIntermediateRenderedMethod;
+        *pcbMethodSize = m_pIntermediateRenderedMethod.size();
     }
 
     CLogging::LogMessage(_T("End CMethodInfo::GetIntermediateRenderedFunctionBody"));
@@ -1299,17 +1296,15 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::SetFinalRenderedFunctionBod
 
     m_bIsInstrumented = true;
 
-    if (m_pFinalRenderedMethod != nullptr)
+    if (m_pFinalRenderedMethod.empty())
     {
         CLogging::LogError(_T("CMethodInfo::SetFinalRenderedFunctionBody - final method body should only be called once."));
         return E_FAIL;
     }
 
     m_pModuleInfo->SetMethodIsTransformed(m_tkFunction, true);
-    m_pFinalRenderedMethod.Allocate(cbMethodSize);
-    IfFailRetErrno(memcpy_s(m_pFinalRenderedMethod, cbMethodSize, pMethodHeader, cbMethodSize));
-
-    m_cbFinalRenderedMethod = cbMethodSize;
+    m_pFinalRenderedMethod.reserve(cbMethodSize);
+    m_pFinalRenderedMethod.insert(m_pFinalRenderedMethod.begin(), pMethodHeader, pMethodHeader + cbMethodSize);
 
     CLogging::LogMessage(_T("End CMethodInfo::SetFinalRenderedFunctionBody"));
 
@@ -1581,44 +1576,44 @@ void MicrosoftInstrumentationEngine::CMethodInfo::LogMethodInfo()
         this->GetFunctionId(&functionId);
     }
 
-    mdToken methodToken;
+    mdToken methodToken = mdTokenNil;
     this->GetMethodToken(&methodToken);
 
     DWORD genericParamCount = 0;
     this->GetGenericParameterCount(&genericParamCount);
 
-    BOOL isStatic;
+    BOOL isStatic = false;
     this->GetIsStatic(&isStatic);
 
-    BOOL isPublic;
+    BOOL isPublic = false;
     this->GetIsPublic(&isPublic);
 
-    BOOL isPrivate;
+    BOOL isPrivate = false;
     this->GetIsPrivate(&isPrivate);
 
-    BOOL isPropGetter;
+    BOOL isPropGetter = false;
     this->GetIsPropertyGetter(&isPropGetter);
 
-    BOOL isPropSetter;
+    BOOL isPropSetter = false;
     this->GetIsPropertySetter(&isPropSetter);
 
-    BOOL isFinalizer;
+    BOOL isFinalizer = false;
     this->GetIsFinalizer(&isFinalizer);
 
-    BOOL isConstructor;
+    BOOL isConstructor = false;
     this->GetIsConstructor(&isConstructor);
 
-    BOOL isStaticConstructor;
+    BOOL isStaticConstructor = false;
     this->GetIsStaticConstructor(&isStaticConstructor);
 
-    CComPtr<IType> pDeclaringType;
+    CComPtr<IType> pDeclaringType = false;
     this->GetDeclaringType(&pDeclaringType);
     CComPtr<ITokenType> pDeclaringTokenType;
     pDeclaringType->QueryInterface(__uuidof(ITokenType), (LPVOID*)&pDeclaringTokenType);
     mdToken declaringTypeToken = mdTokenNil;
     pDeclaringTokenType->GetToken(&declaringTypeToken);
 
-    CComPtr<IType> pReturnType;
+    CComPtr<IType> pReturnType = false;
     this->GetReturnType(&pReturnType);
 
     mdToken retTypeToken = mdTokenNil;
@@ -1708,7 +1703,7 @@ void MicrosoftInstrumentationEngine::CMethodInfo::LogMethodInfo()
         strCorSigElement.append(wszHexByteBuffer);
     }
     strCorSigElement.append(_T("</CorSignature>"));
-    CLogging::LogDumpMessage(strCorSigElement.c_str());
+    CLogging::LogDumpMessage(_T("%s"), strCorSigElement.c_str());
 
     CLogging::LogDumpMessage(_T("    <CorMethodAttr>0x%08x</CorMethodAttr>"), corMethodAttr);
     CLogging::LogDumpMessage(_T("    <CodeRVA>0x%08x</CodeRVA>"), rva);
@@ -1727,7 +1722,7 @@ void MicrosoftInstrumentationEngine::CMethodInfo::LogMethodInfo()
         strLocalSigElement.append(wszHexByteBuffer);
     }
     strLocalSigElement.append(_T("</LocalSignature>"));
-    CLogging::LogDumpMessage(strLocalSigElement.c_str());
+    CLogging::LogDumpMessage(_T("%s"), strLocalSigElement.c_str());
 
     CLogging::LogDumpMessage(_T("    <MaxStack>0x%08x</MaxStack>"), maxStack);
 
@@ -1885,18 +1880,18 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::GetFinalInstrumentation(_Ou
     IfNullRet(pcbMethodBody);
     IfNullRet(ppMethodBody);
 
-    if (m_pFinalRenderedMethod == nullptr)
+    if (m_pFinalRenderedMethod.empty())
     {
         // raw profiler did not instrument the method. Use the intermediate rendered method
         // from the instrumentation methods.
-        *pcbMethodBody = m_cbIntermediateRenderedMethod;
-        *ppMethodBody = m_pIntermediateRenderedMethod;
+        *pcbMethodBody = m_pIntermediateRenderedMethod.size();
+        *ppMethodBody = m_pIntermediateRenderedMethod.data();
     }
     else
     {
         // raw profiler did instrument the method. Use the final rendered method
-        *pcbMethodBody = m_cbFinalRenderedMethod;
-        *ppMethodBody = m_pFinalRenderedMethod;
+        *pcbMethodBody = m_pFinalRenderedMethod.size();
+        *ppMethodBody = m_pFinalRenderedMethod.data();
     }
 
     return S_OK;
@@ -1904,7 +1899,7 @@ HRESULT MicrosoftInstrumentationEngine::CMethodInfo::GetFinalInstrumentation(_Ou
 
 HRESULT MicrosoftInstrumentationEngine::CMethodInfo::MergeILInstrumentedCodeMap(
     _In_ ULONG cILMapEntries,
-    _In_reads_(cILMapEntries) COR_IL_MAP rgILMapEntries[]
+    _In_reads_(cILMapEntries) COR_IL_MAP* rgILMapEntries
     )
 {
     HRESULT hr = S_OK;

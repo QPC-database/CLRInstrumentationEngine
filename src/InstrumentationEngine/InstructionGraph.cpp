@@ -363,9 +363,9 @@ HRESULT MicrosoftInstrumentationEngine::CInstructionGraph::DecodeInstructions(_I
 
 // Generate an IL image from a list of instructions. At the same time produce a map from the old instructions to the new ones.
 HRESULT MicrosoftInstrumentationEngine::CInstructionGraph::EncodeIL(
-    _Out_ CAutoVectorPtr<BYTE>* ppILBuffer,
+    _Inout_ vector<BYTE>& ppILBuffer,
     _Out_ DWORD* pdwILStreamLen,
-    _Out_ CAutoVectorPtr<COR_IL_MAP>* ppCorILMap,
+    _Inout_ vector<COR_IL_MAP>& ppCorILMap,
     _Out_ DWORD* pdwCorILMapmLen
     )
 {
@@ -398,17 +398,17 @@ HRESULT MicrosoftInstrumentationEngine::CInstructionGraph::EncodeIL(
     IfFailRet(CalculateInstructionOffsets());
 
     // Allocate the il buffer
-    CAutoVectorPtr<BYTE> pILArray;
+    vector<BYTE> pILArray;
     if (cbBuffer > 0)
     {
-        pILArray.Attach(new BYTE[cbBuffer]{});
+        pILArray.resize(cbBuffer);
     }
 
     // Allocate the il map.
-    CAutoVectorPtr<COR_IL_MAP> pCorILMap;
+    vector<COR_IL_MAP> pCorILMap;
     if(cCorILMap > 0)
     {
-        pCorILMap.Attach(new COR_IL_MAP[cCorILMap]{});
+        pCorILMap.resize(cCorILMap);
     }
 
     DWORD iCorILMap = 0;
@@ -422,7 +422,7 @@ HRESULT MicrosoftInstrumentationEngine::CInstructionGraph::EncodeIL(
     while (pCurrent != NULL)
     {
         // Encode this instruction
-        IfFailRet(pCurrent->EmitIL(pILArray, cbBuffer));
+        IfFailRet(pCurrent->EmitIL(pILArray.data(), cbBuffer));
 
         BOOL bIsNewInstruction = FALSE;
         pCurrent->GetIsNew(&bIsNewInstruction);
@@ -480,9 +480,9 @@ HRESULT MicrosoftInstrumentationEngine::CInstructionGraph::EncodeIL(
     // Make a reverse pass back through the il map entries setting the new offset to the last instruction that
     // was
 
-    *ppILBuffer = pILArray;
+    ppILBuffer = std::move(pILArray);
     *pdwILStreamLen = cbBuffer;
-    *ppCorILMap = pCorILMap;
+    ppCorILMap = std::move(pCorILMap);
     *pdwCorILMapmLen = cCorILMap;
 
     return S_OK;

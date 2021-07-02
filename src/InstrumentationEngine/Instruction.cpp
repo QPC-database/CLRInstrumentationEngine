@@ -185,7 +185,7 @@ HRESULT MicrosoftInstrumentationEngine::CInstruction::LogInstruction(bool ignore
         }
     }
 
-    CLogging::LogDumpMessage(strInstruction.c_str());
+    CLogging::LogDumpMessage(_T("%s"), strInstruction.c_str());
 
     return hr;
 }

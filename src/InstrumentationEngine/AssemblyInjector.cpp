@@ -633,7 +633,7 @@ HRESULT MicrosoftInstrumentationEngine::AssemblyInjector::ImportMethodDef(_In_ m
 
     if (ulCodeRVA != 0)
     {
-        VOID* pSourceCode = (BYTE*)m_pSourceImageBaseAddress + ulCodeRVA;
+        VOID* pSourceCode = (VOID*)((BYTE*)m_pSourceImageBaseAddress + ulCodeRVA);
         const IMAGE_COR_ILMETHOD_TINY* pSourceCodeTinyHeader = (IMAGE_COR_ILMETHOD_TINY*)pSourceCode;
         const IMAGE_COR_ILMETHOD_FAT* pSourceCodeFatHeader = (IMAGE_COR_ILMETHOD_FAT*)pSourceCode;
         bool isTinyHeader = ((pSourceCodeTinyHeader->Flags_CodeSize & (CorILMethod_FormatMask >> 1)) == CorILMethod_TinyFormat);
@@ -662,8 +662,8 @@ HRESULT MicrosoftInstrumentationEngine::AssemblyInjector::ImportMethodDef(_In_ m
             {
                 // EH section starts at the 4 byte aligned address after the code
                 ehClauseHeaderRVA = ((ulCodeRVA + headerSize + ilCodeSize - 1) & ~3) + 4;
-                VOID* pEHSectionHeader = (BYTE*)m_pSourceImageBaseAddress + ehClauseHeaderRVA;
-                BYTE kind = *(BYTE*)pEHSectionHeader;
+                VOID* pEHSectionHeader = (VOID*)((BYTE*)m_pSourceImageBaseAddress + ehClauseHeaderRVA);
+                BYTE kind = *((BYTE*)pEHSectionHeader);
                 ULONG dataSize = 0;
                 if (kind & CorILMethod_Sect_FatFormat)
                 {
@@ -728,8 +728,8 @@ HRESULT MicrosoftInstrumentationEngine::AssemblyInjector::ImportMethodDef(_In_ m
             IMAGE_COR_ILMETHOD_SECT_SMALL* pTargetEHHeader = (IMAGE_COR_ILMETHOD_SECT_SMALL*)((BYTE*)pTargetCode + (ehClauseHeaderRVA - ulCodeRVA));
             pTargetEHHeader->Kind = pSmallEHHeader->Kind;
             pTargetEHHeader->DataSize = pSmallEHHeader->DataSize;
-            IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL* pSourceEHClause = (IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL*)(pSmallEHHeader + 1);
-            IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL* pTargetEHClause = (IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL*)(pTargetEHHeader + 1);
+            IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL* pSourceEHClause = reinterpret_cast<IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL*>(pSmallEHHeader + 1);
+            IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL* pTargetEHClause = reinterpret_cast<IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL*>(pTargetEHHeader + 1);
             int numClauses = (pSmallEHHeader->DataSize - 4) / sizeof(IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_SMALL);
             for (int i = 0; i < numClauses; i++)
             {
